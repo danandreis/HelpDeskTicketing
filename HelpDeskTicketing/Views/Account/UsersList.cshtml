@@ -1,0 +1,70 @@
+﻿@model IEnumerable<AppUser>
+
+@{
+
+    ViewData["Title"] = "Users list";
+
+}
+
+
+<div class ="row">
+
+    <div class="col-md-12 p-5">
+        <h3 class="text-center fw-bold text-uppercase">List of users</h3>
+        <a class="btn btn-outline-success float-start" asp-action="NewUser">
+            <i class="bi bi-person-add"></i>
+            Add user
+        </a>
+    </div>
+
+    <div class="col-md-12">
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>User Name</th>
+                    <th class="text-center">Branch</th>
+                    <th>Phone Number</th>
+                    <th class="text-center">User Email</th>
+                    <th class="text-center">Options</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.Count() > 0)
+                {
+                    
+                    @foreach(var user in Model)
+                    {
+                        
+                        <tr>
+                            <td>@Html.DisplayFor(u=>user.FullName)</td>
+                            <td>@Html.DisplayFor(u=>user.UserName)</td>
+                            <td>@Html.DisplayFor(u=>user.Branch.Name)</td>
+                            <td>@Html.DisplayFor(u=>user.PhoneNumber)</td>
+                            <td>@Html.DisplayFor(u=>user.Email)</td>
+                            <td class="text-cen">
+                                <a class="btn btn-outline-success" asp-action="Edit" asp-route-id="@user.Id">
+                                    <i class="bi bi-pencil"></i>
+                                    Edit user
+                                </a>
+                                <a class="btn btn-outline-danger" asp-action="Delete" asp-route-id="@user.Id">
+                                    <i class="bi bi-person-fill"></i>
+                                    Block user
+                                </a>
+                                <a class="btn btn-outline-primary" asp-action="ResetPassword" asp-route-id="@user.Id">
+                                    <i class="bi bi-key"></i>
+                                    Reset password
+                                </a>
+                            </td>
+                        </tr>
+                    }
+
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+

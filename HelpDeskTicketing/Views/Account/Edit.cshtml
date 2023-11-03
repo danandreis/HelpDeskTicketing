@@ -1,0 +1,58 @@
+﻿@using HelpDeskTicketing.Data.ViewModels;
+
+@model UserVM
+
+@{
+
+    ViewData["Title"] = "Edit user data";
+
+}
+
+<div class="row">
+    <div class="col-md-4 offset-4">
+        <h3 class="text-center fw-bold">Edit user data</h3>
+    </div>
+
+    <div class="col-md-4 offset-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="FullName"></label>
+                <input class ="form-control" asp-for="FullName"/>
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="UserName"></label>
+                <input class="form-control" asp-for="UserName" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="BranchId"></label>
+                <select class="form-control" asp-for="BranchId" asp-items="@ViewBag.Branches"></select>
+                <span asp-validation-for="BranchId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="Email"></label>
+                <input class="form-control" asp-for="Email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="PhoneNumber"></label>
+                <input class="form-control" asp-for="PhoneNumber" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <a class="btn btn-outline-secondary" asp-action="UsersList"> Cancel </a>
+                <input type="submit" class="btn btn-outline-success float-end" value="Save" asp-action="Edit"/>
+            </div>
+
+        </form>
+    </div>
+
+</div>

@@ -1,0 +1,72 @@
+﻿@using HelpDeskTicketing.Data.ViewModels;
+
+@model UserVM
+
+@{
+
+    ViewData["Title"] = "Add new uer";
+
+}
+
+<div class="row">
+    <div class="col-md-6 offset-3 text-center fw-bold">
+        <h3>Add new user</h3>
+    </div>
+
+    <div class="col-md-4 offset-4">
+        <form asp-action="NewUser">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="FullName"></label>
+                <input class="form-control" asp-for="FullName"/>
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="UserName"></label>
+                <input class="form-control" asp-for="UserName" />
+                <span asp-validation-for="UserName" class = "text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="BranchId"></label>
+                <select class="form-control" asp-for="BranchId" asp-items="@ViewBag.Branches"></select>
+                <span asp-validation-for="BranchId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="Email"></label>
+                <input class="form-control" asp-for="Email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="PhoneNumber"></label>
+                <input class="form-control" asp-for="PhoneNumber" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="Password"></label>
+                <input type="password" class="form-control" asp-for="Password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group" style="padding:5px;">
+                <label class="control-label" asp-for="ConfirmPassword"></label>
+                <input type="password" class="form-control" asp-for="ConfirmPassword" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input class="btn btn-outline-success float-end" type="submit" asp-action="NewUser" value="Add"/>
+                <a class = "btn btn-outline-primary" asp-action="UsersList">Cancel </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

@@ -20,3 +20,18 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.auth-form-header{
+
+    background-color:aqua;
+    border-top-left-radius:9px;
+    border-top-right-radius:9px;
+    text-align:center;
+
+}
+
+.auth-form-content {
+    border-bottom-left-radius: 9px;
+    border-bottom-right-radius: 9px;
+    background-color: whitesmoke;
+}

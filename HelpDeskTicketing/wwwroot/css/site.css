@@ -35,3 +35,53 @@ body {
     border-bottom-right-radius: 9px;
     background-color: whitesmoke;
 }
+
+.reset-pass-header {
+
+    background-color: dimgray;
+    border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+    text-align: center;
+    color:white;
+    vertical-align:central;
+    height:50px;
+
+}
+
+.reset-pass-content {
+
+    border-bottom-left-radius: 9px;
+    border-bottom-right-radius: 9px;
+    background-color:antiquewhite;
+}
+
+.header-link{
+
+    text-decoration:none;
+    color:black;
+}
+
+.header-link:hover {
+    color: blue;
+}
+
+.status-badge{
+
+    border-radius:9px;
+    
+    color:white;
+    font-weight:bold;
+    width:75px;
+    height:30px;
+    text-align:center;
+
+}
+
+.priority-badge {
+    border-radius: 9px;
+    color: white;
+    font-weight: bold;
+    width: 75px;
+    height: 30px;
+    text-align: center;
+}

@@ -1,6 +1,6 @@
 ﻿namespace HelpDeskTicketing.Models
 {
-    public class Chat
+    public class TicketMessage
     {
 
         public string Id { get; set; }

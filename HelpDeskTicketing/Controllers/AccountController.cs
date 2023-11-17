@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace HelpDeskTicketing.Controllers
 {
@@ -17,12 +16,14 @@ namespace HelpDeskTicketing.Controllers
         private readonly INotyfService _notyfService;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
+        private readonly UserManager<AppUser> _userManager;
 
-        public AccountController(INotyfService notyfService, IUserService userService, IMapper mapper)
+        public AccountController(INotyfService notyfService, IUserService userService, IMapper mapper, UserManager<AppUser> userManager)
         {
             _notyfService = notyfService;
             _userService = userService;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         public IActionResult Login()
@@ -43,16 +44,31 @@ namespace HelpDeskTicketing.Controllers
                 return View(loginUser);
             }
 
-            if (await _userService.LoginUser(loginUser))
+            var userDB = await _userService.LoginUser(loginUser);
+
+            if ( userDB != null)
             {
 
                 _notyfService.Success("The user has been successfully authenticated!");
 
-                return RedirectToAction("UsersList");
+                if(_userManager.IsInRoleAsync(userDB,"SystemAdmin").Result)
+                    return RedirectToAction("UsersList");
 
+                if (_userManager.IsInRoleAsync(userDB,"User").Result)
+                    return RedirectToAction("GetAllTickets", "UserTicket");
 
             }
-            
+
+            if (loginUser.isBlocked)
+            {
+
+                _notyfService.Error("Your account is blocked! Please contact thae administrator!");
+                return View(loginUser);
+
+            }
+
+
+
             _notyfService.Error("The login credentials are incorrect!");
 
             return View(loginUser);
@@ -189,6 +205,90 @@ namespace HelpDeskTicketing.Controllers
 
             _notyfService.Success("The user data has been successfully updated!");
             return RedirectToAction("UsersList");
+
+        }
+
+        [Authorize(Roles ="SystemAdmin")]
+        public async Task<IActionResult> ChangeUserStatus(string Id)
+        {
+
+            var userDB = await _userService.GetUser(Id);
+            if (userDB != null)
+            {
+
+                userDB.AccessFailedCount = (userDB.AccessFailedCount != 3)? 3 : 0;
+
+                await _userService.UpdateUser(userDB);
+
+            }
+
+            return RedirectToAction("UsersList");
+        }
+
+        [Authorize(Roles =("SystemAdmin"))]
+        public async Task<IActionResult>ResetPasswordByAdmin(string Id)
+        {
+
+            if (!await _userService.ResetPasswordByAdmin(Id))
+            {
+
+                _notyfService.Error("An error occured when reseting password to user!");
+
+            }
+
+            _notyfService.Success("The password has been successfully reseted");
+
+            return RedirectToAction("UsersList");
+        }
+
+        [Authorize]
+        public async Task<IActionResult>ResetPasswordByUser()
+        {
+
+            ResetPasswordVM resetPasswordVM = new ResetPasswordVM();
+
+            return View(resetPasswordVM);
+
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPasswordByUser(ResetPasswordVM resetPasswordVM)
+        {
+
+            if(!ModelState.IsValid)
+            {
+
+                return View(resetPasswordVM);
+            }
+
+            if (resetPasswordVM == null) 
+            {
+
+                _notyfService.Error("An error occured when reseting password!");
+                return View(resetPasswordVM);
+            
+            }
+
+            if(!await _userService.ResetPasswordByUser(User.Identity.Name,resetPasswordVM.Password))
+            {
+
+                _notyfService.Error("An error occured when reseting password!");
+                return View(resetPasswordVM);
+
+            }
+
+            _notyfService.Success("The password has been successfully reseted!");
+            return RedirectToAction("GetAllTickets","UserTicket");
+
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+
+            await _userService.LogoutUser();
+            return RedirectToAction("Login");
 
         }
 

@@ -13,6 +13,12 @@ namespace HelpDeskTicketing.Data.AutoMapper
             CreateMap<AppUser, UserVM>();
             CreateMap<UserVM, AppUser>();
 
+            CreateMap<TicketVM, Ticket>();
+            CreateMap<Ticket, TicketVM>();
+
+            CreateMap<TicketUserVM, TicketUser>();
+            CreateMap<TicketUser, TicketUserVM>();
+
         }
     }
 }

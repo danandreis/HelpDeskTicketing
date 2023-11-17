@@ -4,6 +4,7 @@ using HelpDeskTicketing.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelpDeskTicketing.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231105071908_changeChatTableNameToTicketMessage")]
+    partial class changeChatTableNameToTicketMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,19 +124,6 @@ namespace HelpDeskTicketing.Migrations
                     b.ToTable("Domains");
                 });
 
-            modelBuilder.Entity("HelpDeskTicketing.Models.Priority", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Priorities");
-                });
-
             modelBuilder.Entity("HelpDeskTicketing.Models.Status", b =>
                 {
                     b.Property<string>("Id")
@@ -164,8 +154,8 @@ namespace HelpDeskTicketing.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PriorityId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("Priority")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
@@ -181,8 +171,6 @@ namespace HelpDeskTicketing.Migrations
                     b.HasIndex("BranchId");
 
                     b.HasIndex("DomainId");
-
-                    b.HasIndex("PriorityId");
 
                     b.HasIndex("StatusId");
 
@@ -403,10 +391,6 @@ namespace HelpDeskTicketing.Migrations
                         .WithMany()
                         .HasForeignKey("DomainId");
 
-                    b.HasOne("HelpDeskTicketing.Models.Priority", "Priority")
-                        .WithMany()
-                        .HasForeignKey("PriorityId");
-
                     b.HasOne("HelpDeskTicketing.Models.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId");
@@ -414,8 +398,6 @@ namespace HelpDeskTicketing.Migrations
                     b.Navigation("Branch");
 
                     b.Navigation("Domain");
-
-                    b.Navigation("Priority");
 
                     b.Navigation("Status");
                 });

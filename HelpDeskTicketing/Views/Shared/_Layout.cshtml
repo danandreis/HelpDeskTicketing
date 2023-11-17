@@ -28,13 +28,17 @@
 
                         <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                            <button class="btn btn-outline-primary" asp-action="#">
-                               <i class="bi bi-card-list"></i>
-                               Unassigned requests
+                               Open requests <span class="badge bg-danger">5</span>
                            </button>
 
                             <button class="btn btn-outline-success" asp-action="#">
                                 <i class="bi bi-card-checklist"></i>
-                                Assigned requests
+                                Assigned requests  <span class="badge bg-danger">5</span>
+                            </button>
+
+                            <button class="btn btn-outline-info" asp-action="#">
+                                <i class="bi bi-card-checklist"></i>
+                                Closed requests  <span class="badge bg-danger">5</span>
                             </button>
                         </div>
 
@@ -43,12 +47,12 @@
                     @if(User.IsInRole("User"))
                     {
 
-                        <a class="btn btn-outline-primary" asp-action="#">
+                        <a class="btn btn-outline-primary"  asp-controller="UserTicket" asp-action="GetAllTickets">
                             <i class="bi bi-card-text"></i>
                             My requests
                         </a>
 
-                        <a class="btn btn-outline-success" asp-action="#">
+                        <a class="btn btn-outline-success" asp-controller="UserTicket" asp-action="AddTicket">
                             <i class="bi bi-database-add"></i>
                             New request
                         </a>
@@ -63,7 +67,7 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="meniuUtilizator">
                             <li>
-                                <a class="dropdown-item" asp-controller="Account" asp-action="ResetareParola">
+                                <a class="dropdown-item" asp-controller="Account" asp-action="ResetPasswordByUser">
                                     <i class="bi bi-key"></i>
                                         Reset password
                                 </a>

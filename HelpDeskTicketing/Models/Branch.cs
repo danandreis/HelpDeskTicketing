@@ -8,6 +8,9 @@
 
         public List<AppUser> AppUsers{ get; set; }
 
-
+        public static explicit operator Branch(List<Branch> v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

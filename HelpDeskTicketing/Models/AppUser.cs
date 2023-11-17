@@ -15,7 +15,7 @@ namespace HelpDeskTicketing.Models
 
         public List<TicketUser> TicketUsers { get; set; }
 
-        public List<Chat>Chats { get; set; }
+        public List<TicketMessage>Chats { get; set; }
 
     }
 }

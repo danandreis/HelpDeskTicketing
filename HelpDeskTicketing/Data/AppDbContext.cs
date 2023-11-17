@@ -31,12 +31,13 @@ namespace HelpDeskTicketing.Data
 
         }
 
-        public DbSet<Chat> Chats { get; set; }
+        public DbSet<TicketMessage> TicketMessages { get; set; }
         public DbSet<Domain> Domains { get; set; }
         public DbSet<TicketFile> TicketFiles { get; set; }
         public DbSet<Status> Statuses { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Branch> Branches { get; set; }
         public DbSet<TicketUser> TicketUsers{ get; set; }
+        public DbSet<Priority> Priorities { get; set; }
     }
 }

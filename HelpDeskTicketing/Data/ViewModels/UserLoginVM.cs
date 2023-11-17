@@ -12,5 +12,7 @@ namespace HelpDeskTicketing.Data.ViewModels
         [Required]
         public string Password { get; set; }
 
+        public bool isBlocked { get; set; }
+
     }
 }

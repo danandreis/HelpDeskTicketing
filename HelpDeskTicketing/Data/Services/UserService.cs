@@ -52,7 +52,7 @@ namespace HelpDeskTicketing.Data.Services
 
                 var branch = await _context.Branches.FirstOrDefaultAsync(b => b.Name == "IT Department");
 
-                var role = (userVM.BranchId == branch.Id) ? "SysAdmin" : "User";
+                var role = (userVM.BranchId == branch.Id) ? "SystemAdmin" : "User";
 
                 if (!await _roleManager.RoleExistsAsync(role))
                 {
@@ -85,12 +85,6 @@ namespace HelpDeskTicketing.Data.Services
 
         }
 
-        public Task<bool> BlockUser()
-        {
-            throw new NotImplementedException();
-        }
-
-
         public async Task<IEnumerable<AppUser>> GetUsers()
         {
 
@@ -99,26 +93,48 @@ namespace HelpDeskTicketing.Data.Services
 
         }
 
-
-        public async Task<bool> LoginUser(UserLoginVM userLoginVM)
+        public async Task<AppUser> LoginUser(UserLoginVM userLoginVM)
         {
             
             var userDB = await _userManager.FindByNameAsync(userLoginVM.UserName);
 
             if (userDB == null) {
 
-                return false;
+                return null;
 
             }
             else
             {
+
+                if(userDB.AccessFailedCount == 3)
+                {
+
+                    userLoginVM.isBlocked = true;
+                    return null;
+
+                }
 
                 var passwordCheck = await _userManager.CheckPasswordAsync(userDB, userLoginVM.Password);
 
                 if (!passwordCheck)
                 {
 
-                    return false;
+                    if(userDB.AccessFailedCount < 3)
+                    {
+
+                        await _userManager.AccessFailedAsync(userDB);
+
+                    }
+                    
+                    if(userDB.AccessFailedCount == 3)
+                    {
+
+                        userLoginVM.isBlocked = true;
+
+                    }
+                    
+                    return null;
+
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(userDB, userLoginVM.Password, false, false);
@@ -126,17 +142,12 @@ namespace HelpDeskTicketing.Data.Services
                 if(!result.Succeeded)
                 {
 
-                    return false;
+                    return null;
                 }
 
-                return true;
+                return userDB;
             }
 
-        }
-
-        public Task<AppUser> ResetPassword()
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<IdentityResult> UpdateUser(AppUser user)
@@ -159,6 +170,67 @@ namespace HelpDeskTicketing.Data.Services
                 return null;
 
             return await _userManager.FindByIdAsync(Id);
+
+        }
+
+        public async Task<bool> ResetPasswordByUser(string userName, string newPassword)
+        {
+
+            var userDB = await _userManager.FindByNameAsync(userName);
+
+            if(userDB == null)
+            {
+
+                return false;
+
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(userDB);
+
+            IdentityResult identityResult = await _userManager.ResetPasswordAsync(userDB, token, newPassword);
+
+            if(!identityResult.Succeeded)
+            {
+
+                return false;
+
+            }
+
+            return true;
+
+
+        }
+
+        public async Task<bool> ResetPasswordByAdmin(string Id)
+        {
+
+            var userDB = await _userManager.FindByIdAsync(Id);
+
+            if(userDB == null)
+            {
+
+                return false;
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(userDB);
+
+            IdentityResult result = await _userManager.ResetPasswordAsync(userDB, token, "Password_1234");
+
+            if(!result.Succeeded)
+            {
+
+                return false;
+
+            }
+
+            return true;
+
+        }
+
+        public async Task LogoutUser()
+        {
+
+            await _signInManager.SignOutAsync();
 
         }
     }

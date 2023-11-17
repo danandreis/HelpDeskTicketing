@@ -10,9 +10,10 @@ namespace HelpDeskTicketing.Data.Services
         Task<AppUser> GetUser(string Id);
         Task<AppUser> AddUser(UserVM userVM);
         Task<IdentityResult> UpdateUser(AppUser user);
-        Task<AppUser> ResetPassword();
-        Task<bool> LoginUser(UserLoginVM userLoginVM);
-        Task<bool> BlockUser();
+        Task<bool> ResetPasswordByUser(string userName, string newPassword);
+        Task<bool> ResetPasswordByAdmin(string Id);
+        Task<AppUser> LoginUser(UserLoginVM userLoginVM);
+        Task LogoutUser();
         Task<IEnumerable<Branch>> GetBranches();
         
     }

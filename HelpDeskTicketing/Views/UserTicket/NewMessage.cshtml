@@ -1,0 +1,24 @@
+﻿@using HelpDeskTicketing.Data.ViewModels;
+@model TicketMessageVM
+
+
+    <form enctype="multipart/form-data" style="margin-bottom:35px;" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="TicketId" />
+
+        <div class="form-group">
+            <label class="control-label">New Message</label>
+            <textarea class="form-control" style="resize:none;width:75%;" rows="5" placeholder="Your message goes here..." asp-for="@Model.Message"></textarea>
+            <span asp-validation-for="@Model.Message"></span>
+        </div>
+
+        <div class="form-group" style="margin-top:7px;">
+            <input type="file" multiple class="form-control" style="width:75%;" asp-for="@Model.Files" />
+        </div>
+
+        <div class="form-group" style="margin-top:7px;">
+            <a href="#" class="btn btn-outline-secondary float-start" style="margin-top:5px;">Cancel</a>
+            <input type="submit" class=" btn btn-outline-success" style="margin-left:500px;margin-top:5px;" value="Send"
+                   asp-action="AddTicketMessage"/>
+        </div>
+    </form>

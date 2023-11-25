@@ -8,7 +8,6 @@ namespace HelpDeskTicketing.Models
         public string Title { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate{ get; set; }
-        public string Description{ get; set; }
 
         public Priority Priority{ get; set; }
         public string PriorityId{ get; set; }
@@ -28,8 +27,7 @@ namespace HelpDeskTicketing.Models
 
         public List<TicketUser> TicketUsers { get; set; }
 
-        public List<TicketMessage> Chats { get; set; }
-        public List<TicketFile>TicketFiles { get; set; }
+        public List<TicketMessage> Messages { get; set; }
 
     }
 }

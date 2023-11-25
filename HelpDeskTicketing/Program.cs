@@ -24,6 +24,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options=>options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString")));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITicketService,TicketService>();
+builder.Services.AddScoped<ITicketMessageService,TicketMessageService>();
+builder.Services.AddScoped<ITicketFilesService, TicketFilesService>();
 
 builder.Services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 builder.Services.AddMemoryCache();

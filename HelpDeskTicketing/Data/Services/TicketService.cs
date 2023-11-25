@@ -68,7 +68,9 @@ namespace HelpDeskTicketing.Data.Services
         {
             
             return await _context.Tickets.Include(t => t.Domain).Include(t => t.Status).Include(t => t.Branch).
-                                            Include(t => t.Priority).Include(t => t.TicketUsers).ThenInclude(t => t.AppUser).
+                                            Include(t => t.Priority).Include(t => t.Messages.OrderByDescending(tm=>tm.Date)).
+                                            ThenInclude(tm=>tm.TicketFiles).
+                                            Include(t => t.TicketUsers).ThenInclude(t => t.AppUser).
                                             Where(t=>t.Id == Id).FirstOrDefaultAsync();
 
             

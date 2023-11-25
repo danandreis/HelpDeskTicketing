@@ -4,6 +4,7 @@ using HelpDeskTicketing.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelpDeskTicketing.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231119215750_updateTicketFileTable")]
+    partial class updateTicketFileTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,12 +200,12 @@ namespace HelpDeskTicketing.Migrations
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TicketMessageId")
+                    b.Property<string>("TicketId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TicketMessageId");
+                    b.HasIndex("TicketId");
 
                     b.ToTable("TicketFiles");
                 });
@@ -422,11 +425,11 @@ namespace HelpDeskTicketing.Migrations
 
             modelBuilder.Entity("HelpDeskTicketing.Models.TicketFile", b =>
                 {
-                    b.HasOne("HelpDeskTicketing.Models.TicketMessage", "TicketMessage")
+                    b.HasOne("HelpDeskTicketing.Models.Ticket", "Ticket")
                         .WithMany("TicketFiles")
-                        .HasForeignKey("TicketMessageId");
+                        .HasForeignKey("TicketId");
 
-                    b.Navigation("TicketMessage");
+                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("HelpDeskTicketing.Models.TicketMessage", b =>
@@ -530,12 +533,9 @@ namespace HelpDeskTicketing.Migrations
                 {
                     b.Navigation("Messages");
 
-                    b.Navigation("TicketUsers");
-                });
-
-            modelBuilder.Entity("HelpDeskTicketing.Models.TicketMessage", b =>
-                {
                     b.Navigation("TicketFiles");
+
+                    b.Navigation("TicketUsers");
                 });
 #pragma warning restore 612, 618
         }

@@ -19,6 +19,9 @@ namespace HelpDeskTicketing.Data.AutoMapper
             CreateMap<TicketUserVM, TicketUser>();
             CreateMap<TicketUser, TicketUserVM>();
 
+            CreateMap<TicketMessage, TicketMessageVM>();
+            CreateMap<TicketMessageVM, TicketMessage>();
+
         }
     }
 }

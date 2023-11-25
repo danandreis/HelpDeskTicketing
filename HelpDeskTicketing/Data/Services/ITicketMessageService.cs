@@ -1,8 +1,9 @@
-﻿using HelpDeskTicketing.Models;
+﻿using HelpDeskTicketing.Data.ViewModels;
+using HelpDeskTicketing.Models;
 
 namespace HelpDeskTicketing.Data.Services
 {
-    public interface ITicketMessage
+    public interface ITicketMessageService
     {
 
         Task<IEnumerable<TicketMessage>> GetTicketMessages();

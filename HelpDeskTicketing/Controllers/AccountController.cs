@@ -153,7 +153,7 @@ namespace HelpDeskTicketing.Controllers
                 return RedirectToAction("UsersList");
             }
 
-            AppUser userDB = await _userService.GetUser(Id);
+            AppUser userDB = await _userService.GetUserById(Id);
 
             if (userDB == null) 
             {
@@ -189,7 +189,7 @@ namespace HelpDeskTicketing.Controllers
 
             }
 
-            var userDB = await _userService.GetUser(Id);
+            var userDB = await _userService.GetUserById(Id);
 
             _mapper.Map(userMV, userDB);
 
@@ -212,7 +212,7 @@ namespace HelpDeskTicketing.Controllers
         public async Task<IActionResult> ChangeUserStatus(string Id)
         {
 
-            var userDB = await _userService.GetUser(Id);
+            var userDB = await _userService.GetUserById(Id);
             if (userDB != null)
             {
 

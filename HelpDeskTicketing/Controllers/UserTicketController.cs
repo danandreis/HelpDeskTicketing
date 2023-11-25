@@ -1,7 +1,8 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
-using AspNetCoreHero.ToastNotification.Notyf;
+using AutoMapper;
 using HelpDeskTicketing.Data.Services;
 using HelpDeskTicketing.Data.ViewModels;
+using HelpDeskTicketing.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -15,13 +16,23 @@ namespace HelpDeskTicketing.Controllers
         private readonly ITicketService _ticketService;
         private readonly IPrincipal _principal;
         private readonly INotyfService _notyfService;
+        private readonly ITicketMessageService _ticketMessageService;
+        private readonly IUserService _userService;
+        private readonly IMapper _mapper;
+        private readonly ITicketFilesService _ticketFilesService;
 
-        public UserTicketController(ITicketService ticketService, IPrincipal principal, INotyfService notyfService)
+        public UserTicketController(ITicketService ticketService, IPrincipal principal, INotyfService notyfService, 
+                ITicketMessageService ticketMessageService, IUserService userService, IMapper mapper,
+                ITicketFilesService ticketFilesService)
         {
 
             _ticketService = ticketService;
             _principal = principal;
             _notyfService = notyfService;
+            _ticketMessageService = ticketMessageService;
+            _userService = userService;
+            _mapper = mapper;
+            _ticketFilesService = ticketFilesService;
         }
 
         [Authorize]
@@ -34,12 +45,22 @@ namespace HelpDeskTicketing.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult>GetTicket(string id)
+        public async Task<IActionResult> GetTicket(string id)
         {
 
             var ticketDB = await _ticketService.GetTicket(id);
 
-            return View(ticketDB);
+            TicketVM ticketMV = new TicketVM();
+            _mapper.Map(ticketDB, ticketMV);
+
+            ticketMV.TicketMessage = new TicketMessageVM
+            {
+
+                TicketId = ticketDB.Id
+
+            };
+
+            return View(ticketMV);
 
         }
 
@@ -88,25 +109,122 @@ namespace HelpDeskTicketing.Controllers
             if (await _ticketService.AddTicket(ticketVM) != null)
             {
 
+                TicketUserVM ticketUserVM = new TicketUserVM
+                {
+                    TicketId = ticketVM.Id
+                };
+
+
                 //Add the user to TicketUser table in database (Associate the current user to the tocket
                 //as Use who issued thet ticket
 
-                TicketUserVM ticketUserVM = new TicketUserVM();
-                ticketUserVM.TicketId = ticketVM.Id;
-
-                if(await _ticketService.AddTicketUser(ticketUserVM) != null)
+                if (await _ticketService.AddTicketUser(ticketUserVM) != null)
                 {
 
-                    _notyfService.Success("The ticket has been successfully registered to database!");
+                    //Add Message to the TicketMesage Table
+                    TicketMessage ticketMessage = new TicketMessage();
+                    ticketMessage.Id = Guid.NewGuid().ToString();
+                    ticketMessage.Message = ticketVM.TicketMessage.Message;
+                    ticketMessage.TicketId = ticketVM.Id;
+                    ticketMessage.Date = DateTime.Now;
+                    ticketMessage.AppUserId = _userService.GetUserByUserName(_principal.Identity.Name).Result.Id;
 
-                    return RedirectToAction("GetAllTickets");
+                    if(await _ticketMessageService.AddTicketMessage(ticketMessage) == null)
+                    {
+
+                        _notyfService.Error("An error occured where registering the new ticket to database!");
+
+
+                    }
+                    else
+                    {
+
+                        //Add/Save Files to DB/Disk if there are some 
+                        if (ticketVM.TicketMessage.Files.Count > 0)
+                        {
+
+                            if (!await _ticketFilesService.AddFileToDatabase(ticketVM.TicketMessage.Files, ticketMessage.Id))
+                            {
+
+                                _notyfService.Error("There was an error when saving files to disk!");
+
+                            }
+                            else
+                            {
+
+                                _notyfService.Success("The ticket has been successfully registered to database!");
+
+                                return RedirectToAction("GetAllTickets");
+
+
+                            }
+                                
+
+                        }
+                        else
+                        {
+
+                            return RedirectToAction("GetAllTickets");
+
+                        }
+
+                    }
 
                 }
 
             }
 
-            _notyfService.Error("An error occured where registering the new ticket to database!");
             return View(ticketVM);
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddTicketMessage(TicketMessageVM ticketMessageVM)
+        {
+
+            if(!ModelState.IsValid)
+            {
+
+                _notyfService.Error("You must provide a message!");
+                
+
+            }
+            else
+            {
+
+                TicketMessage ticketMessage = new TicketMessage();
+                _mapper.Map(ticketMessageVM, ticketMessage);
+
+                ticketMessage.Id = Guid.NewGuid().ToString();
+                ticketMessage.AppUserId = _ticketService.GetUserByUserName(_principal.Identity?.Name).Result.Id;
+                ticketMessage.Date = DateTime.Now;
+
+
+                if (await _ticketMessageService.AddTicketMessage(ticketMessage) == null)
+                {
+
+                    _notyfService.Error("There was an error when saving message to database!");
+
+
+
+                }
+                else
+                {
+
+                    //Add/Save Files to DB/Disk if there are some 
+                    if(ticketMessageVM.Files.Count > 0)
+                    {
+
+                        if(!await _ticketFilesService.AddFileToDatabase(ticketMessageVM.Files,ticketMessage.Id))
+                            _notyfService.Error("There was an error when saving files to disk!");
+
+                    }
+
+                }
+
+            }
+
+            return RedirectToAction("GetTicket", new { Id = ticketMessageVM.TicketId });
 
         }
     }

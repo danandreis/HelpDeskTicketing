@@ -14,5 +14,7 @@
 
         public string TicketId { get; set; }
         public Ticket Ticket{ get; set; }
+
+        public List<TicketFile> TicketFiles { get; set; }
     }
 }

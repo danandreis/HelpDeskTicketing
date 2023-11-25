@@ -164,13 +164,31 @@ namespace HelpDeskTicketing.Data.Services
 
         }
 
-        public async Task<AppUser> GetUser(string Id)
+        public async Task<AppUser> GetUserById(string Id)
         {
             if (Id == null)
                 return null;
 
             return await _userManager.FindByIdAsync(Id);
 
+        }
+
+        public async Task<AppUser> GetUserByUserName(string userName)
+        {
+         
+            
+            if (userName == null)
+            {
+
+                return null;
+            }
+            else
+            {
+
+                return await _userManager.FindByNameAsync(userName);
+
+            }
+        
         }
 
         public async Task<bool> ResetPasswordByUser(string userName, string newPassword)
@@ -233,5 +251,7 @@ namespace HelpDeskTicketing.Data.Services
             await _signInManager.SignOutAsync();
 
         }
+
+      
     }
 }

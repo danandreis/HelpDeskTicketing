@@ -3,6 +3,7 @@ using HelpDeskTicketing.Data.ViewModels;
 using HelpDeskTicketing.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Principal;
 
 namespace HelpDeskTicketing.Data.Services
 {
@@ -13,15 +14,17 @@ namespace HelpDeskTicketing.Data.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IMapper _mapper;
+        private readonly IPrincipal _principal;
 
         public UserService(AppDbContext context, UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, 
-            SignInManager<AppUser> signInManager, IMapper mapper)
+            SignInManager<AppUser> signInManager, IMapper mapper, IPrincipal principal)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _mapper = mapper;
+            _principal = principal;
         }
 
         public async Task<AppUser> AddUser(UserVM userVM)
@@ -89,6 +92,16 @@ namespace HelpDeskTicketing.Data.Services
         {
 
             return await _context.Users.Include(u=>u.Branch).ToListAsync();
+
+
+        }
+
+        public async Task<IEnumerable<AppUser>> GetUserAdmins()
+        {
+
+            return await _context.Users.Where(u => u.UserName != _principal.Identity.Name).
+                    Where(u => u.TicketUsers.Any(tu => tu.UserRole.Equals("SystemAdmin"))).
+                    OrderBy(u => u.FullName).ToListAsync();
 
 
         }

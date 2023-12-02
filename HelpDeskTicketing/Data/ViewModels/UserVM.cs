@@ -21,7 +21,7 @@ namespace HelpDeskTicketing.Data.ViewModels
         public string Email { get; set; }
 
         [Required]
-        [Display(Name ="Enter a valid phone number")]
+        [Display(Name ="Phone number")]
         [RegularExpression(@"^07[0-9]{8}$")]
         public string PhoneNumber { get; set; }
 

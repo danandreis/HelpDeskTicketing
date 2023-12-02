@@ -7,6 +7,7 @@ namespace HelpDeskTicketing.Data.Services
     public interface IUserService
     {
         Task<IEnumerable<AppUser>> GetUsers();
+        Task<IEnumerable<AppUser>> GetUserAdmins(); //Get the list of systemAdmins to be selected when reasign ticket
         Task<AppUser> GetUserById(string Id); //Get user by Id
         Task<AppUser> GetUserByUserName(string userName); //Get user by UserName
         Task<AppUser> AddUser(UserVM userVM);

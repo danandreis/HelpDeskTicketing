@@ -17,13 +17,18 @@ namespace HelpDeskTicketing.Controllers
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ITicketService _ticketService;
+        public TicketEvidenceVM ticketEvidence = new TicketEvidenceVM();
 
-        public AccountController(INotyfService notyfService, IUserService userService, IMapper mapper, UserManager<AppUser> userManager)
+        public AccountController(INotyfService notyfService, IUserService userService, 
+            IMapper mapper, UserManager<AppUser> userManager, ITicketService ticketService)
         {
             _notyfService = notyfService;
             _userService = userService;
             _mapper = mapper;
             _userManager = userManager;
+            _ticketService = ticketService;
+
         }
 
         public IActionResult Login()
@@ -52,10 +57,16 @@ namespace HelpDeskTicketing.Controllers
                 _notyfService.Success("The user has been successfully authenticated!");
 
                 if(_userManager.IsInRoleAsync(userDB,"SystemAdmin").Result)
-                    return RedirectToAction("UsersList");
+                {
+
+                    
+                    return RedirectToAction("GetAdminTickets", "Tickets", new { type = "Open" });
+
+                }
+                    
 
                 if (_userManager.IsInRoleAsync(userDB,"User").Result)
-                    return RedirectToAction("GetAllTickets", "UserTicket");
+                    return RedirectToAction("GetUserTickets", "Tickets");
 
             }
 
@@ -75,7 +86,7 @@ namespace HelpDeskTicketing.Controllers
 
         }
 
-        public IActionResult AccessDenied(string ReturnURL)
+        public IActionResult AccessDenied()
         {
 
             return View();
@@ -87,6 +98,7 @@ namespace HelpDeskTicketing.Controllers
         {
 
             var users = await _userService.GetUsers();
+            ViewBag.TicketsNoByStatus = await _ticketService.GetTicketsNumberGroupedByStatus();
             return View(users);
 
         }
@@ -279,7 +291,7 @@ namespace HelpDeskTicketing.Controllers
             }
 
             _notyfService.Success("The password has been successfully reseted!");
-            return RedirectToAction("GetAllTickets","UserTicket");
+            return RedirectToAction("GetAllTickets","Tickets");
 
         }
 

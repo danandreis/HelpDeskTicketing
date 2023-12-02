@@ -241,6 +241,15 @@ namespace HelpDeskTicketing.Migrations
                     b.Property<string>("TicketId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Active")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AssignmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ReleaseDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("UserRole")
                         .HasColumnType("nvarchar(max)");
 
@@ -400,15 +409,15 @@ namespace HelpDeskTicketing.Migrations
                         .HasForeignKey("BranchId");
 
                     b.HasOne("HelpDeskTicketing.Models.Domain", "Domain")
-                        .WithMany()
+                        .WithMany("Tickets")
                         .HasForeignKey("DomainId");
 
                     b.HasOne("HelpDeskTicketing.Models.Priority", "Priority")
-                        .WithMany()
+                        .WithMany("Tickets")
                         .HasForeignKey("PriorityId");
 
                     b.HasOne("HelpDeskTicketing.Models.Status", "Status")
-                        .WithMany()
+                        .WithMany("Tickets")
                         .HasForeignKey("StatusId");
 
                     b.Navigation("Branch");
@@ -524,6 +533,21 @@ namespace HelpDeskTicketing.Migrations
             modelBuilder.Entity("HelpDeskTicketing.Models.Branch", b =>
                 {
                     b.Navigation("AppUsers");
+                });
+
+            modelBuilder.Entity("HelpDeskTicketing.Models.Domain", b =>
+                {
+                    b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("HelpDeskTicketing.Models.Priority", b =>
+                {
+                    b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("HelpDeskTicketing.Models.Status", b =>
+                {
+                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("HelpDeskTicketing.Models.Ticket", b =>

@@ -1,0 +1,226 @@
+﻿@using HelpDeskTicketing.Data.ViewModels;
+@model TicketVM;
+
+@{
+
+    ViewData["Title"] = "Ticket details"; 
+
+}
+
+<div class="row" style="margin-top:75px;">
+    <div class="col-md-8 offset-2 fw-bold text-center">
+        <h2 class="fw-bold"> Ticket details </h2>
+    </div>
+  
+    <div class="col-md-8 offset-2" style="margin-top:50px;">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>Open date:</td>
+                    <td class="fw-bold">@Model.StartDate.ToString("dd.MM.yyyy hh:mm tt")</td>
+                    <td>Title : </td>
+                    <td class="fw-bold"> @Model.Title</td>
+
+                    @if (User.IsInRole("User"))
+                    {
+                        <td>Assigned To</td>
+                    }
+                    else
+                    {
+                        <td>User</td>
+                    }
+
+                    <td>
+                        @foreach (var user in Model.TicketUsers)
+                        {
+
+                            if ((User.IsInRole("User") && user.UserRole.Equals("SystemAdmin") && user.Active == 1)
+                            ||
+                            (User.IsInRole("SystemAdmin") && user.UserRole.Equals("User")))
+                            {
+
+                                <b>@Html.DisplayFor(t=>user.AppUser.FullName)</b>
+
+                            }
+
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <td>Priority: </td>
+                        <td>
+                            @switch (@Model.Priority.Name)
+                            {
+
+                                case "Low":
+
+                                    <div class="priority-badge" style="background-color:grey;">
+                                        @Html.DisplayFor(t=>@Model.Priority.Name)
+                                    </div>
+                                    break;
+
+                                case "High":
+
+                                    <div class="priority-badge" style="background-color:#F6804C;">
+                                        @Html.DisplayFor(t=>@Model.Priority.Name)
+                                    </div>
+                                    break;
+
+                                case "Critical":
+
+                                    <div class="priority-badge" style="background-color:red;">
+                                        @Html.DisplayFor(t=>@Model.Priority.Name)
+                                    </div>
+                                    break;
+
+                            }
+                        </td>
+                    <td>Status : </td>
+                        <td>
+                            @switch (@Model.Status.Name)
+                            {
+
+                                case "Open":
+
+                                    <div class="status-badge" style="background-color:cornflowerblue;">
+                                        @Html.DisplayFor(t=>Model.Status.Name)
+                                    </div>
+
+                                    break;
+
+                                case "Assigned":
+
+                                <div class="status-badge" style="background-color: forestgreen;">
+                                        @Html.DisplayFor(t=>Model.Status.Name)
+                                    </div>
+
+                                    break;
+
+                                case "Closed":
+
+                                    <div class="status-badge" style="background-color: dimgrey;">
+                                        @Html.DisplayFor(t=>Model.Status.Name)
+                                    </div>
+
+                                    break;
+
+                            }
+                        </td>
+                    <td>Close date: </td>
+
+                    @if(Model.EndDate != null)
+                    {
+                        
+                        <td class="fw-bold" > @Model.EndDate?.ToString("dd.MM.yyyy hh:mm tt");</td>
+                    }
+                    else
+                    {
+                        
+                        <td>- </td>
+                    }
+                </tr>
+                @if(User.IsInRole("User"))
+                {
+
+                    <tr>
+                        <td>
+                            <a data-toggle="modal" data-target="#modalAssignUsers" href="#"
+                               class="btn btn-outline-primary">
+                                Assigned users history
+                                <i class="bi bi-file-text-fill text-primary" style="font-size:19px;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+               
+                @if (User.IsInRole("SystemAdmin") && Model.Status.Name.Equals("Assigned"))
+                {
+
+                    <tr>
+                        <form asp-action="UpdateTiketUser">
+                            <input type="hidden" name="TicketId" value="@Model.Id"/>
+                            <input type="hidden" name="AppUserId" id="AppUserId" />
+
+                            <td> ReAssign to: </td>
+                            <td class="form-group">
+                                 <select class="form-control" asp-items="ViewBag.AdminUsers" id="userId"></select>
+                            </td>
+                            <td class="form-group">
+                            <input type="submit" class="btn btn-outline-success" value="ReAssign" asp-action="ReAssignTicket" />
+                            </td>
+                        </form>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
+        @if ((User.IsInRole("User") && !Model.Status.Name.Equals("Closed")) || (User.IsInRole("SystemAdmin")) && Model.Status.Name.Equals("Assigned"))
+        {
+            //Not allowed to send Messages by System Admins until the ticket is Assigned
+
+            @await Html.PartialAsync("NewMessage",Model.TicketMessage)
+
+        }
+
+        @await Html.PartialAsync("MessagesList",Model.Messages) 
+
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalAssignUsers" tabindex="-1" role="dialog"
+     aria-labelledby="assignedUser" aria-hidden="true">
+    <div class="modal-dialog" role="document" >
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignedUser">List of assigned users to the ticket </h5>
+            </div>
+
+            <div class="modal-body" style="height:100%;">
+                <table class="table">
+                    <tbody>
+
+                        @foreach (var user in Model.TicketUsers)
+                        {
+
+                            if (user.Active == 0)
+                            {
+
+                                <tr style="font-size:medium">
+                                    <td> Assigned to:</td>
+                                    <td><b>@user.AppUser.FullName</b></td>
+                                    <td> From:</td>
+                                    <td><b>@user.AssignmentDate.ToString("dd.MM.yyyy hh:mm tt")</b></td>
+                                    <td> Until:</td>
+                                    <td><b>@user.ReleaseDate.ToString("dd.MM.yyyy hh:mm tt")</b></td>
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+        var id = document.getElementById("userId");
+
+        id.addEventListener("change", function (event) {
+
+            document.getElementById("AppUserId").value = event.target.value;
+
+        });
+
+
+</script>
+

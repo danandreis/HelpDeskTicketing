@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/HelpDeskTicketing.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
 </head>
-<body>
+<body onload="selectUserId">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -26,33 +26,54 @@
                     @if (User.IsInRole("SystemAdmin"))
                     {
 
-                        <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-                           <button class="btn btn-outline-primary" asp-action="#">
-                               Open requests <span class="badge bg-danger">5</span>
-                           </button>
-
-                            <button class="btn btn-outline-success" asp-action="#">
+                        <div class="btn-group" role="group">
+                            <a class="btn btn-outline-primary" asp-controller="Tickets" asp-action="GetAdminTickets" asp-route-type="Open">
                                 <i class="bi bi-card-checklist"></i>
-                                Assigned requests  <span class="badge bg-danger">5</span>
-                            </button>
+                                Open tickets 
+                                    <span class="badge bg-danger">
+                                        @if (@ViewBag.TicketsNoByStatus != null)
+                                        {
+                                            @ViewBag.TicketsNoByStatus.OpenTickets
+                                        
+                                        }
+                                    </span>
+                           </a>
 
-                            <button class="btn btn-outline-info" asp-action="#">
+                            <a class="btn btn-outline-success" asp-controller="Tickets" asp-action="GetAdminTickets" asp-route-type="Assigned">
                                 <i class="bi bi-card-checklist"></i>
-                                Closed requests  <span class="badge bg-danger">5</span>
-                            </button>
+                                Assigned tickets  
+                                    <span class="badge bg-danger">
+                                        @if (@ViewBag.TicketsNoByStatus != null)
+                                        {
+                                            @ViewBag.TicketsNoByStatus.AssignedTickets
+
+                                        }
+                                    </span>
+                            </a>
+
+                            <a class="btn btn-outline-secondary" asp-controller="Tickets" asp-action="GetAdminTickets" asp-route-type="Closed">
+                                <i class="bi bi-card-checklist"></i>
+                                Closed tickets  
+                                    <span class="badge bg-danger">
+                                        @if (@ViewBag.TicketsNoByStatus != null)
+                                        {
+                                            @ViewBag.TicketsNoByStatus.ClosedTickets
+
+                                        }
+                                    </span>
+                            </a>
                         </div>
-
                     }
 
                     @if(User.IsInRole("User"))
                     {
 
-                        <a class="btn btn-outline-primary"  asp-controller="UserTicket" asp-action="GetAllTickets">
+                        <a class="btn btn-outline-primary"  asp-controller="Tickets" asp-action="GetUserTickets">
                             <i class="bi bi-card-text"></i>
                             My requests
                         </a>
 
-                        <a class="btn btn-outline-success" asp-controller="UserTicket" asp-action="AddTicket">
+                        <a class="btn btn-outline-success" asp-controller="Tickets" asp-action="AddTicket">
                             <i class="bi bi-database-add"></i>
                             New request
                         </a>
@@ -110,3 +131,9 @@
 
 </body>
 </html>
+
+<script>
+
+    document.getElementById("AppUserId").value = document.getElementById("userId").value;
+
+</script>

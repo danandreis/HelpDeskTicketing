@@ -23,7 +23,7 @@ namespace HelpDeskTicketing.Data.Services
             _userManager = userManager;
         }
 
-        public async Task<IEnumerable<Ticket>> GetTicketsList(string userName)
+        public async Task<IEnumerable<Ticket>> GetTicketsList(string userName, string status, string priority)
         {
 
             /*var ticketsList = from t in _context.Tickets
@@ -59,8 +59,28 @@ namespace HelpDeskTicketing.Data.Services
                                             Include(t=>t.Priority).Include(t => t.TicketUsers).ThenInclude(t=>t.AppUser);
 
 
-            return await ticketsList.Where(t => t.TicketUsers.Any(tu => tu.AppUser.UserName.Equals(userName))).
-                        OrderBy(t=>t.Priority.Name).ThenBy(t=>t.StartDate).ToListAsync();
+            if(userName != null) 
+            {
+
+                ticketsList = ticketsList.Where(t => t.TicketUsers.Any(tu => tu.AppUser.UserName.Equals(userName)));
+
+            }
+
+            if(!status.Equals("All"))
+            {
+
+                ticketsList = ticketsList.Where(t=>t.Status.Name.Equals(status));
+
+            }
+
+            if (!priority.Equals("All"))
+            {
+
+                ticketsList = ticketsList.Where(t => t.Priority.Name.Equals(priority));
+
+            }
+
+            return await ticketsList.OrderBy(t => t.Priority.Name).ThenBy(t => t.StartDate).ToListAsync();
 
         }
 
@@ -77,9 +97,62 @@ namespace HelpDeskTicketing.Data.Services
 
         }
 
+        public async Task<TicketEvidenceVM> GetTicketsNumberGroupedByStatus()
+        {
+
+             TicketEvidenceVM ticketEvidenceVM = new TicketEvidenceVM
+            {
+
+                 OpenTickets = 0,
+                 AssignedTickets = 0,
+                 ClosedTickets = 0
+
+             };
+
+            
+            var ticketsNo = await _context.Tickets.Include(t=>t.Status).Include(t=>t.TicketUsers).ThenInclude(tu=>tu.AppUser).
+                                    GroupBy(t=>t.Status).ToArrayAsync();
+
+            foreach(var items in ticketsNo)
+            {
+
+                foreach(var ticket in items)
+                {
+
+                    if (ticket.Status.Name.Equals("Open"))
+                        ticketEvidenceVM.OpenTickets++;
+
+                    if (ticket.Status.Name.Equals("Closed"))
+                        ticketEvidenceVM.ClosedTickets++;
+
+                    if (ticket.Status.Name.Equals("Assigned") 
+                                && ticket.TicketUsers.Where(tu=>tu.AppUser.UserName == _principal.Identity.Name && tu.Active == 1).Count() > 0) 
+                        ticketEvidenceVM.AssignedTickets++;
+
+                }
+
+            }
+
+            return ticketEvidenceVM;
+
+        }
+
         public Task<Ticket> UpdateTicket(string Id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<bool> UpdateTicketStatus(string ticketId, string status)
+        {
+
+            var IDStatus = _context.Statuses.FirstOrDefaultAsync(s => s.Name.Equals(status)).Result.Id;
+
+            var newStatus = new Ticket { Id = ticketId, StatusId = IDStatus };
+            _context.Attach(newStatus);
+            _context.Entry(newStatus).Property(s => s.StatusId).IsModified = true;
+
+            return await _context.SaveChangesAsync() > 0;
+
         }
 
         public async Task<Ticket> AddTicket(TicketVM ticketVM)
@@ -100,13 +173,63 @@ namespace HelpDeskTicketing.Data.Services
             return ticket;
 
         }
+
+        public async Task<TicketUser> GetAssignedUser(TicketUserVM ticketUserVM)
+        {
+
+            return await _context.TicketUsers.FirstOrDefaultAsync(tu => tu.AppUserId.Equals(ticketUserVM.AppUserId) && tu.Active==1
+                                            && tu.TicketId.Equals(ticketUserVM.TicketId));
+
+        }
+
         public async Task<TicketUser> AddTicketUser(TicketUserVM ticketUserVM)
         {
 
-            var userDB = await _userManager.FindByNameAsync(_principal.Identity.Name);
+            //Check if ticket has current SystemAdmin associated with
+            var userId = GetUserByUserName(_principal.Identity.Name).Result.Id;
+            var oldTicketUser = new TicketUserVM { AppUserId = userId, TicketId = ticketUserVM.TicketId };
+            var oldTicketUserRecord = await _context.TicketUsers.AsNoTracking().FirstOrDefaultAsync(tu => tu.AppUserId.Equals(oldTicketUser.AppUserId) && tu.Active == 1
+                                            && tu.TicketId.Equals(oldTicketUser.TicketId));
+
+            var userDB = new AppUser();
+
+           if (oldTicketUserRecord != null)
+           {
+
+                //if YES deactivate the existing SystemAdmin user 
+                var oldticketUser = new TicketUser
+                {
+
+
+                    TicketId = ticketUserVM.TicketId,
+                    AppUserId =  _userManager.FindByNameAsync(_principal.Identity.Name).Result.Id,
+                    Active = 0,
+                    ReleaseDate = DateTime.Now
+
+                };
+
+                //Reset Active status to 0 for current SystemAdmin
+                _context.Attach(oldticketUser);
+                _context.Entry(oldticketUser).Property(otu=>otu.Active).IsModified = true;
+                _context.Entry(oldticketUser).Property(otu=>otu.Active).IsModified = true;
+
+                await _context.SaveChangesAsync();
+
+                userDB = await _userManager.FindByIdAsync(ticketUserVM.AppUserId);
+
+            }
+            else
+            {
+
+                //If NO - assign current user to SysAdmin
+                userDB = await _userManager.FindByNameAsync(_principal.Identity.Name);
+
+            }
 
             ticketUserVM.AppUserId = userDB.Id;
-            ticketUserVM.UserRole = "User";
+            ticketUserVM.Active = 1;
+            ticketUserVM.UserRole = "SystemAdmin";
+            ticketUserVM.AssignmentDate = DateTime.Now;
 
             TicketUser ticketUser = new TicketUser();
             _mapper.Map(ticketUserVM, ticketUser);
@@ -121,6 +244,42 @@ namespace HelpDeskTicketing.Data.Services
 
             return null;
 
+
+        }
+
+        public async Task<AssignNewUserTicketVM> UpdateTicketUser(AssignNewUserTicketVM assignNewUserTicket)
+        {
+
+            var user = await _userManager.FindByNameAsync(_principal.Identity.Name);
+
+            var ticketUser = await _context.TicketUsers.FirstOrDefaultAsync(tu=>tu.TicketId.Equals(assignNewUserTicket.id)
+                && tu.AppUserId.Equals(user.Id));
+
+            _context.TicketUsers.Remove(ticketUser);
+
+            if(await _context.SaveChangesAsync() > 0)
+            {
+
+                var newTicketUser = new TicketUser
+                {
+                    TicketId = assignNewUserTicket.id,
+                    AppUserId = assignNewUserTicket.AppUserId,
+                    UserRole = "SystemAdmin"
+                };
+
+
+                await _context.TicketUsers.AddAsync(newTicketUser);
+
+                if (await _context.SaveChangesAsync() > 0)
+                {
+
+                    return assignNewUserTicket;
+
+                }
+
+            }
+
+            return null;
 
         }
 
@@ -169,6 +328,6 @@ namespace HelpDeskTicketing.Data.Services
 
         }
 
-       
+     
     }
 }

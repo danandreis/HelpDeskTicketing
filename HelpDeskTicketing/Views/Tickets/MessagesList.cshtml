@@ -1,0 +1,91 @@
+﻿@model IEnumerable<TicketMessage>
+
+
+@foreach(TicketMessage tm in Model)
+{
+
+    <div class="card" style="margin-bottom:35px;width:75%;">
+        <div class="card-header">
+            <span class="float-start">
+                Date : <b>@tm.Date.ToString("dd.MM.yyy hh:mm tt")</b>
+            </span>
+            <span class="float-end">
+                User :
+                @if(tm.AppUser.UserName == User.Identity.Name)
+                {
+                    <span class="fw-bold text-success">You</span>
+                }
+                else
+                {
+                    <b>@tm.AppUser.FullName</b>
+                }
+                
+            </span>
+        </div>
+        <div class="card-body">
+
+            <pre style="white-space: pre-wrap;">@tm.Message</pre>
+        
+        </div>
+        
+        @if(tm.TicketFiles.Count > 0)
+        {
+            <div class="card-footer">
+                @foreach (TicketFile tf in tm.TicketFiles)
+                {
+
+                    @Html.DisplayFor(f=>tf.DisplayName)
+                    <a id="openFiles" data-toggle="modal" data-target="#modalFile" href="#"
+                       class="text-black" style="text-decoration:none;"
+                       onclick="openFile('/Files/@tf.FileName','@tf.DisplayName')">
+
+                        <i class="bi bi-file-text-fill text-primary" style="font-size:19px;"></i>
+                    </a>
+
+                }
+            </div>
+            
+        }
+            
+    </div>
+
+}
+
+<div class="modal fade" id="modalFile" tabindex="-1" role="dialog"
+     aria-labelledby="fileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content" style="height:700px;">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="fileModalLabel"></h5>
+            </div>
+
+            <div class="modal-body" style="height:100%;">
+                <embed id="file" src="" style="height: 500px; width: auto;" />
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function openFile(diskFileName, databaseFileName) { 
+    
+        document.getElementById("file").src = diskFileName;
+        if (!diskFileName.includes("jpg") && !diskFileName.includes("jpeg")) 
+        {
+
+                document.getElementById("file").setAttribute("class", "w-100 h-100");
+
+        }
+
+        document.getElementById("fileModalLabel").innerHTML = databaseFileName;
+
+    }
+
+</script>

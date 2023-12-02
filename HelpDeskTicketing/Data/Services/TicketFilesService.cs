@@ -1,5 +1,6 @@
 ﻿using HelpDeskTicketing.Data.ViewModels;
 using HelpDeskTicketing.Models;
+using System;
 
 namespace HelpDeskTicketing.Data.Services
 {
@@ -33,7 +34,7 @@ namespace HelpDeskTicketing.Data.Services
             {
 
                 //Create an encoded name for the saved file
-                string encodedFileName = Guid.NewGuid().ToString() + file.FileName.Substring(file.FileName.IndexOf(".")); 
+                string encodedFileName = string.Concat(Guid.NewGuid().ToString(), file.FileName.AsSpan(file.FileName.IndexOf("."))); 
 
                 string filePath = Path.Combine(_webHostEnvironment.WebRootPath + "/Files", encodedFileName);
 
@@ -46,11 +47,13 @@ namespace HelpDeskTicketing.Data.Services
                 }
 
                 //Add file to database
-                TicketFile ticketFile = new TicketFile();
-                ticketFile.Id = Guid.NewGuid().ToString();
-                ticketFile.TicketMessageId = ticketId;
-                ticketFile.FileName = encodedFileName;
-                ticketFile.DisplayName = file.FileName;
+                TicketFile ticketFile = new TicketFile
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    TicketMessageId = ticketId,
+                    FileName = encodedFileName,
+                    DisplayName = file.FileName
+                };
 
 
                 await _context.TicketFiles.AddAsync(ticketFile);
